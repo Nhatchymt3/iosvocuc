@@ -1,20 +1,43 @@
 workflows:
   unity_ios_unsigned_build:
-    name: Unity iOS Unsigned Build
+    name: Build Unity iOS unsigned IPA
     environment:
       xcode: latest
+      cocoapods: false
+      vars:
+        UNITY_IOS_PROJECT_PATH: "./"  # Thay đường dẫn nếu project không ở root
+        SCHEME: "Unity-iPhone"       # Tên scheme Unity iOS
     scripts:
-      - name: Build app
+      - name: Build Unity iOS project
         script: |
-          xcodebuild -project Unity-iPhone.xcodeproj \
-            -scheme Unity-iPhone \
+          set -e
+          echo "Build Xcode project unsigned..."
+          xcodebuild -project "$UNITY_IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
+            -scheme "$SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             build
 
+          echo "Create Payload folder..."
+          rm -rf Payload
           mkdir Payload
-          cp -R ~/Library/Developer/Xcode/DerivedData/Unity-iPhone*/Build/Products/Release-iphoneos/*.app Payload/
 
-          zip -r UnsignedApp.ipa Payload
+          echo "Find built .app file..."
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "$SCHEME.app" | head -n 1)
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Error: .app not found at $APP_PATH"
+            exit 1
+          fi
+
+          echo "Copy app to Payload folder..."
+          cp -R "$APP_PATH" Payload/
+
+          echo "Zip Payload folder to create unsigned IPA..."
+          zip -r "$SCHEME-unsigned.ipa" Payload
+
+          echo "List IPA file:"
+          ls -lh "$SCHEME-unsigned.ipa"
+
     artifacts:
-      - UnsignedApp.ipa
+      - $SCHEME-unsigned.ipa
