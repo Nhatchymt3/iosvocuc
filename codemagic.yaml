@@ -1,0 +1,24 @@
+workflows:
+  unity_ios_build:
+    name: Unity iOS Build
+    environment:
+      xcode: latest
+      cocoapods: true
+    scripts:
+      - name: Install CocoaPods dependencies
+        script: |
+          pod install
+      - name: Build IPA
+        script: |
+          xcodebuild -workspace Unity-iPhone.xcworkspace \
+            -scheme Unity-iPhone \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/Build.xcarchive archive
+
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/Build.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR/ExportedIPA
+    artifacts:
+      - ExportedIPA/*.ipa
