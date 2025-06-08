@@ -6,7 +6,7 @@ workflows:
     scripts:
       - name: Build IPA
         script: |
-          xcodebuild -workspace Unity-iPhone.xcworkspace \
+          xcodebuild -project Unity-iPhone.xcodeproj \
             -scheme Unity-iPhone \
             -sdk iphoneos \
             -configuration Release \
