@@ -1,20 +1,20 @@
 workflows:
-  unity_ios_build:
-    name: Unity iOS Build
+  unity_ios_unsigned_build:
+    name: Unity iOS Unsigned Build
     environment:
       xcode: latest
     scripts:
-      - name: Build IPA
+      - name: Build app
         script: |
           xcodebuild -project Unity-iPhone.xcodeproj \
             -scheme Unity-iPhone \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath $CM_BUILD_DIR/Build.xcarchive archive
+            build
 
-          xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/Build.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ExportedIPA
+          mkdir Payload
+          cp -R ~/Library/Developer/Xcode/DerivedData/Unity-iPhone*/Build/Products/Release-iphoneos/*.app Payload/
+
+          zip -r UnsignedApp.ipa Payload
     artifacts:
-      - ExportedIPA/*.ipa
+      - UnsignedApp.ipa
